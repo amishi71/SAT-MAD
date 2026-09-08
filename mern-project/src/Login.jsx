@@ -29,7 +29,6 @@ export default function Login({ onLogin }) {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
 
-  // Re-validate live, any time the field values change.
   useEffect(() => {
     setErrors(validate(form));
   }, [form]);
@@ -37,10 +36,6 @@ export default function Login({ onLogin }) {
   const handleChange = useCallback((field) => (e) => {
     const { value } = e.target;
     setForm((prev) => ({ ...prev, [field]: value }));
-  }, []);
-
-  const handleBlur = useCallback((field) => () => {
-    setTouched((prev) => ({ ...prev, [field]: true }));
   }, []);
 
   const handleSubmit = (e) => {
@@ -84,7 +79,6 @@ export default function Login({ onLogin }) {
                 placeholder="you@mission.control"
                 value={form.email}
                 onChange={handleChange('email')}
-                onBlur={handleBlur('email')}
                 aria-invalid={Boolean(showError('email'))}
                 aria-describedby="email-error"
               />
@@ -106,7 +100,6 @@ export default function Login({ onLogin }) {
                 placeholder="••••••••"
                 value={form.password}
                 onChange={handleChange('password')}
-                onBlur={handleBlur('password')}
                 aria-invalid={Boolean(showError('password'))}
                 aria-describedby="password-error"
               />
