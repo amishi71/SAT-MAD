@@ -95,6 +95,43 @@ body {
 .met-label { font-size: 10px; color: var(--text-dim); letter-spacing: 0.5px; }
 .met-value { font-family: var(--mono); font-size: 13px; margin-top: 2px; }
 
+.account-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--panel-border);
+}
+
+.account-email {
+  font-size: 11px;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 5px;
+  flex-shrink: 0;
+}
+
+.logout-btn:hover {
+  color: var(--red);
+  background: rgba(240, 66, 82, 0.1);
+}
+
 /* Main */
 .main {
   flex: 1;

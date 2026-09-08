@@ -1,7 +1,7 @@
 import { useState, useEffect, useReducer, useContext, useCallback, useMemo, createContext } from 'react';
 import {
   Activity, Radio, AlertTriangle, Target, Layers,
-  Satellite, ChartNoAxesGantt, Wifi
+  Satellite, ChartNoAxesGantt, Wifi, LogOut
 } from 'lucide-react';
 import './App.css';
 
@@ -89,7 +89,7 @@ function missionReducer(state, action) {
 
 const MissionContext = createContext();
 
-export default function App() {
+export default function App({ user, onLogout }) {
   const [state, dispatch] = useReducer(missionReducer, initialState);
   const { missionMeta, stats, satellites, systemHealth, anomalies, timeline, connection } = state;
 
@@ -133,7 +133,7 @@ export default function App() {
   return (
     <MissionContext.Provider value={{ missionMeta, connection }}>
       <div className="dash">
-        <Sidebar activeNav={activeNav} onNavClick={handleNavClick} />
+        <Sidebar activeNav={activeNav} onNavClick={handleNavClick} user={user} onLogout={onLogout} />
 
         <main className="main">
           <Header criticalCount={criticalCount} avgHealth={avgHealth} />
@@ -164,7 +164,7 @@ export default function App() {
   );
 }
 
-function Sidebar({ activeNav, onNavClick }) {
+function Sidebar({ activeNav, onNavClick, user, onLogout }) {
   const { connection } = useContext(MissionContext);
 
   return (
@@ -198,6 +198,14 @@ function Sidebar({ activeNav, onNavClick }) {
         <div className="met-label">Mission Elapsed Time</div>
         <div className="met-value">
           {connection.metSeconds != null ? formatMET(connection.metSeconds) : '--:--:--'}
+        </div>
+
+        <div className="account-row">
+          <span className="account-email">{user?.email ?? user?.name ?? 'Guest'}</span>
+          <button type="button" className="logout-btn" onClick={onLogout}>
+            <LogOut size={13} />
+            <span>Log out</span>
+          </button>
         </div>
       </div>
     </aside>
