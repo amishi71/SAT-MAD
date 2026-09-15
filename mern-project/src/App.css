@@ -68,6 +68,7 @@ body {
   font-size: 13px;
   text-align: left;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .nav-item.active {
@@ -153,6 +154,21 @@ body {
 .header h1 { font-size: 22px; margin: 0; }
 
 .header-badges { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.route-placeholder {
+  padding: 28px;
+}
+
+.route-placeholder h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.route-placeholder p {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 13px;
+}
 
 .badge {
   font-size: 11px;

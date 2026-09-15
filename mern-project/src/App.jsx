@@ -1,16 +1,17 @@
-import { useState, useEffect, useReducer, useContext, useCallback, useMemo, createContext } from 'react';
+import { useEffect, useReducer, useContext, useMemo, createContext } from 'react';
 import {
   Activity, Radio, AlertTriangle, Target, Layers,
   Satellite, ChartNoAxesGantt, Wifi, LogOut
 } from 'lucide-react';
+import { Link, Route, Routes, useLocation } from 'react-router-dom';
 import './App.css';
 
 const NAV_ITEMS = [
-  { id: 'overview', label: 'Mission Overview', icon: Activity },
-  { id: 'subsystems', label: 'Subsystems', icon: Layers },
-  { id: 'telemetry', label: 'Telemetry', icon: Radio },
-  { id: 'anomalies', label: 'Anomaly Analysis', icon: AlertTriangle },
-  { id: 'runs', label: 'Detection Runs', icon: Target },
+  { id: 'overview', path: '/', label: 'Mission Overview', icon: Activity },
+  { id: 'subsystems', path: '/subsystems', label: 'Subsystems', icon: Layers },
+  { id: 'telemetry', path: '/telemetry', label: 'Telemetry', icon: Radio },
+  { id: 'anomalies', path: '/anomalies', label: 'Anomaly Analysis', icon: AlertTriangle },
+  { id: 'runs', path: '/runs', label: 'Detection Runs', icon: Target },
 ];
 
 // Add near the top, below initialState/missionReducer.
@@ -93,8 +94,6 @@ export default function App({ user, onLogout }) {
   const [state, dispatch] = useReducer(missionReducer, initialState);
   const { missionMeta, stats, satellites, systemHealth, anomalies, timeline, connection } = state;
 
-  const [activeNav, setActiveNav] = useState('overview');
-
   // useEffect(() => {
   //   fetch('/api/mission-overview')
   //     .then((r) => r.json())
@@ -115,10 +114,6 @@ export default function App({ user, onLogout }) {
     return () => clearInterval(id);
   }, [connection.connected]);
 
-  const handleNavClick = useCallback((id) => {
-    setActiveNav(id);
-  }, []);
-
   const criticalCount = useMemo(
     () => anomalies.filter((a) => a.severity === 'critical').length,
     [anomalies]
@@ -133,39 +128,66 @@ export default function App({ user, onLogout }) {
   return (
     <MissionContext.Provider value={{ missionMeta, connection }}>
       <div className="dash">
-        <Sidebar activeNav={activeNav} onNavClick={handleNavClick} user={user} onLogout={onLogout} />
+        <Sidebar user={user} onLogout={onLogout} />
 
         <main className="main">
-          <Header criticalCount={criticalCount} avgHealth={avgHealth} />
-
-          <section className="stat-row">
-            <StatCard icon={Satellite} label="Active Satellites"
-              value={stats.activeSatellites.value} sub={stats.activeSatellites.total} accent="purple" />
-            <StatCard icon={Radio} label="Telemetry Channels"
-              value={stats.telemetryChannels.value} sub={stats.telemetryChannels.status} accent="white" />
-            <StatCard icon={ChartNoAxesGantt} label="Anomaly Score"
-              value={stats.anomalyScore.value} sub={stats.anomalyScore.status} accent="green" />
-            <StatCard icon={Target} label="Detection Runs"
-              value={stats.detectionRuns.value} sub={stats.detectionRuns.status} accent="white" />
-          </section>
-
-          <section className="mid-row">
-            <OrbitalPanel satellites={satellites} />
-            <SystemHealthPanel systemHealth={systemHealth} />
-          </section>
-
-          <section className="bottom-row">
-            <AnomaliesPanel anomalies={anomalies} />
-            <TimelinePanel timeline={timeline} />
-          </section>
+          <Routes>
+            <Route path="/" element={<Overview stats={stats} satellites={satellites} systemHealth={systemHealth} anomalies={anomalies} timeline={timeline} criticalCount={criticalCount} avgHealth={avgHealth} />} />
+            {NAV_ITEMS.slice(1).map(({ path, label }) => (
+              <Route key={path} path={path} element={<RoutePlaceholder title={label} />} />
+            ))}
+            <Route path="*" element={<RoutePlaceholder title="Page not found" />} />
+          </Routes>
         </main>
       </div>
     </MissionContext.Provider>
   );
 }
 
-function Sidebar({ activeNav, onNavClick, user, onLogout }) {
+function Overview({ stats, satellites, systemHealth, anomalies, timeline, criticalCount, avgHealth }) {
+  return (
+    <>
+      <Header criticalCount={criticalCount} avgHealth={avgHealth} />
+
+      <section className="stat-row">
+        <StatCard icon={Satellite} label="Active Satellites"
+          value={stats.activeSatellites.value} sub={stats.activeSatellites.total} accent="purple" />
+        <StatCard icon={Radio} label="Telemetry Channels"
+          value={stats.telemetryChannels.value} sub={stats.telemetryChannels.status} accent="white" />
+        <StatCard icon={ChartNoAxesGantt} label="Anomaly Score"
+          value={stats.anomalyScore.value} sub={stats.anomalyScore.status} accent="green" />
+        <StatCard icon={Target} label="Detection Runs"
+          value={stats.detectionRuns.value} sub={stats.detectionRuns.status} accent="white" />
+      </section>
+
+      <section className="mid-row">
+        <OrbitalPanel satellites={satellites} />
+        <SystemHealthPanel systemHealth={systemHealth} />
+      </section>
+
+      <section className="bottom-row">
+        <AnomaliesPanel anomalies={anomalies} />
+        <TimelinePanel timeline={timeline} />
+      </section>
+    </>
+  );
+}
+
+function RoutePlaceholder({ title }) {
+  return (
+    <>
+      <Header />
+      <section className="card route-placeholder">
+        <h2>{title}</h2>
+        <p>This mission view is ready for telemetry data.</p>
+      </section>
+    </>
+  );
+}
+
+function Sidebar({ user, onLogout }) {
   const { connection } = useContext(MissionContext);
+  const { pathname } = useLocation();
 
   return (
     <aside className="sidebar">
@@ -178,15 +200,15 @@ function Sidebar({ activeNav, onNavClick, user, onLogout }) {
       </div>
 
       <nav className="nav">
-        {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
-          <button
+        {NAV_ITEMS.map(({ id, path, label, icon: Icon }) => (
+          <Link
             key={id}
-            className={`nav-item ${activeNav === id ? 'active' : ''}`}
-            onClick={() => onNavClick(id)}
+            to={path}
+            className={`nav-item ${pathname === path ? 'active' : ''}`}
           >
             <Icon size={16} />
             <span>{label}</span>
-          </button>
+          </Link>
         ))}
       </nav>
 
