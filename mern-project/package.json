@@ -7,9 +7,14 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "node-demo": "node node-demos/server.js",
+    "node-file-demo": "node node-demos/file-operations.js",
+    "node-blocking-demo": "node node-demos/blocking.js",
+    "node-non-blocking-demo": "node node-demos/non-blocking.js"
   },
   "dependencies": {
+    "express": "^5.2.1",
     "lucide-react": "^1.42.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

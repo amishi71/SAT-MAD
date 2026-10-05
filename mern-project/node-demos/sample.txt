@@ -1,0 +1,3 @@
+Node.js file operations are easy to inspect with native modules.
+This file is served by the HTTP demo and read line by line.
+Callbacks let the program continue while file work is in progress.
