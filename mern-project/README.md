@@ -1,4 +1,38 @@
-# React + Vite
+# React + Vite and Node.js demonstrations
+
+## Node.js practical demonstrations
+
+The `node-demos` folder contains small native Node.js examples for routing, callbacks, file operations, custom modules, and blocking versus non-blocking code.
+
+Run the browser demonstration with:
+
+```bash
+npm run node-demo
+```
+
+Open <http://localhost:3000>. The server demonstrates:
+
+- `GET /` for a plain HTML response
+- `GET /about` for another routed HTML response
+- `GET /api/student` for a JSON response
+- `GET /file` to read and display a text file in the browser
+- `GET /file-info` for permissions, existence, and line count
+- `GET /math` for functions imported from a custom module
+- `GET /blocking` and `GET /non-blocking` for timing comparison
+
+The file, blocking, and non-blocking examples can also be run directly:
+
+```bash
+npm run node-file-demo
+npm run node-blocking-demo
+npm run node-non-blocking-demo
+```
+
+Stop the browser server with `Ctrl+C`.
+
+---
+
+## React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
