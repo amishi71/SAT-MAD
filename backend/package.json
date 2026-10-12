@@ -1,0 +1,18 @@
+{
+  "name": "sentinel-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "ingest:mission1": "python scripts/ingest_esa.py ../../ESA-Mission1.zip data/mission-summary.json",
+    "ingest:mission2": "python scripts/ingest_esa.py ../../ESA-Mission2.zip data/mission2-summary.json",
+    "seed": "node scripts/seed_mongo.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "mongoose": "^8.18.0",
+    "swagger-ui-express": "^5.0.1"
+  }
+}

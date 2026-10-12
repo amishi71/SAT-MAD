@@ -1,0 +1,35 @@
+services:
+  api:
+    build: ./backend
+    ports:
+      - "4000:4000"
+    environment:
+      MONGO_URI: mongodb://mongo:27017/sentinel
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+  seed:
+    build: ./backend
+    command: npm run seed
+    environment:
+      MONGO_URI: mongodb://mongo:27017/sentinel
+    depends_on:
+      mongo:
+        condition: service_healthy
+  mongo:
+    image: mongo:8
+    ports:
+      - "27017:27017"
+    volumes:
+      - sentinel-mongo:/data/db
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' localhost:27017/sentinel | grep 1",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+volumes:
+  sentinel-mongo:

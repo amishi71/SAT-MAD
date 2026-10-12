@@ -1,0 +1,36 @@
+openapi: 3.0.3
+info:
+  title: Sentinel Telemetry API
+  version: 0.1.0
+paths:
+  /api/mission:
+    get:
+      summary: ESA Mission-1 index metadata
+      responses:
+        "200": { description: Mission index metadata }
+  /api/health:
+    get:
+      summary: Service health
+      responses:
+        "200": { description: Healthy }
+  /api/telemetry/channels:
+    get:
+      summary: List correlated telemetry channels
+      responses:
+        "200": { description: Channel list }
+  /api/telemetry/channels/{channelId}:
+    get:
+      summary: Read one indexed ESA channel
+      parameters:
+        - name: channelId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: Channel data and statistics }
+        "404": { description: Channel not found }
+  /api/detection/runs:
+    get:
+      summary: List PCA detection runs
+      responses:
+        "200": { description: Detection runs }
