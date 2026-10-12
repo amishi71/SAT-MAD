@@ -2,7 +2,7 @@ import { useMission } from "../hooks/useMission";
 import { Metric, Panel } from "../components/DashboardComponents";
 
 export default function RunsPage() {
-  const { mission } = useMission();
+  const { mission, detection } = useMission();
   return (
     <>
       <section className="metric-grid run-metrics">
@@ -18,26 +18,30 @@ export default function RunsPage() {
           note="Ground truth"
           accent="green"
         />
-        <Metric label="Data status" value="READY" note="API indexed" />
+        <Metric
+          label="PCA status"
+          value="ACTIVE"
+          note={`${detection.components} components`}
+        />
       </section>
       <Panel title="Detection run readiness">
         <div className="compare-cards">
           <div>
             <small>DATA INGESTION</small>
-            <strong>COMPLETE</strong>
-            <span className="green-text">All source channels indexed</span>
+            <strong>COMPUTED</strong>
+            <span className="green-text">
+              {detection.sampleCount} score samples
+            </span>
           </div>
           <div>
             <small>DETECTION INPUT</small>
-            <strong>{mission.channelCount} CH</strong>
-            <span className="green-text">PCA window source available</span>
+            <strong>{detection.featureCount} CH</strong>
+            <span className="green-text">Correlated features scored</span>
           </div>
           <div>
             <small>LABEL COVERAGE</small>
-            <strong>{mission.anomalyCount}</strong>
-            <span className="green-text">
-              Intervals available for evaluation
-            </span>
+            <strong>{detection.anomalySamples}</strong>
+            <span className="green-text">Samples above PCA threshold</span>
           </div>
         </div>
       </Panel>

@@ -2,44 +2,38 @@ import { useMission } from "../hooks/useMission";
 import { HealthBars, Panel } from "../components/DashboardComponents";
 
 export default function SubsystemsPage() {
-  const { channels } = useMission();
-  const groups = [...new Set(channels.map((channel) => channel.subsystem))];
+  const { channels, detection } = useMission();
   return (
     <section className="subsystem-layout">
       <Panel title="Subsystem comparison">
-        <HealthBars channels={channels} />
+        <HealthBars
+          channels={channels}
+          subsystemHealth={detection.subsystems}
+        />
       </Panel>
       <div className="subsystem-cards">
-        {groups.map((group) => {
-          const members = channels.filter(
-            (channel) => channel.subsystem === group,
-          );
-          const anomalies = members.reduce(
-            (sum, channel) => sum + channel.anomalies.length,
-            0,
-          );
-          return (
-            <article className="subsystem-card" key={group}>
-              <div className="card-title">
-                <span className="system-icon green">*</span>
-                <strong>{group}</strong>
-                <span
-                  className={`status-pill ${anomalies ? "amber" : "nominal"}`}
-                >
-                  {anomalies ? "Labeled" : "Nominal"}
-                </span>
-              </div>
-              <div className="big-score green">{members.length}</div>
-              <div className="mini-line">
-                <span
-                  style={{ width: `${Math.min(100, members.length * 10)}%` }}
-                />
-              </div>
-              <p>Channels in catalog</p>
-              <small>{anomalies} labeled intervals</small>
-            </article>
-          );
-        })}
+        {detection.subsystems.map((subsystem) => (
+          <article className="subsystem-card" key={subsystem.name}>
+            <div className="card-title">
+              <span className="system-icon green">*</span>
+              <strong>{subsystem.name}</strong>
+              <span
+                className={`status-pill ${subsystem.healthScore < 70 ? "amber" : "nominal"}`}
+              >
+                {subsystem.healthScore < 70 ? "Needs review" : "Nominal"}
+              </span>
+            </div>
+            <div className="big-score green">{subsystem.healthScore}%</div>
+            <div className="mini-line">
+              <span style={{ width: `${subsystem.healthScore}%` }} />
+            </div>
+            <p>
+              {subsystem.channelCount} channels / {subsystem.completeness}%
+              complete
+            </p>
+            <small>{subsystem.labeledAnomalies} labeled intervals</small>
+          </article>
+        ))}
       </div>
     </section>
   );

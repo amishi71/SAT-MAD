@@ -8,10 +8,12 @@ export default function MissionProvider({ children }) {
   const [selectedDataset, setSelectedDataset] = useState(defaultDataset);
   const [channels, setChannels] = useState([]);
   const [mission, setMission] = useState(null);
+  const [detection, setDetection] = useState(null);
   const [error, setError] = useState("");
   const selectDataset = (dataset) => {
     setMission(null);
     setChannels([]);
+    setDetection(null);
     setSelectedDataset(dataset);
   };
 
@@ -27,18 +29,28 @@ export default function MissionProvider({ children }) {
   useEffect(() => {
     const query = new URLSearchParams({ dataset: selectedDataset });
     Promise.all([
-      fetch(`/api/telemetry/channels?${query}`).then((response) => response.json()),
+      fetch(`/api/telemetry/channels?${query}`).then((response) =>
+        response.json(),
+      ),
       fetch(`/api/mission?${query}`).then((response) => response.json()),
+      fetch(`/api/detection/pca?${query}`).then((response) => response.json()),
     ])
-      .then(([channelPayload, missionPayload]) => {
-        if (channelPayload.error || missionPayload.error) {
+      .then(([channelPayload, missionPayload, detectionPayload]) => {
+        if (
+          channelPayload.error ||
+          missionPayload.error ||
+          detectionPayload.error
+        ) {
           throw new Error("Selected dataset is not available");
         }
         setChannels(channelPayload.data);
         setMission(missionPayload);
+        setDetection(detectionPayload.data);
       })
       .catch(() =>
-        setError("Unable to load the selected ESA dataset. Check the MongoDB seed."),
+        setError(
+          "Unable to load the selected ESA dataset. Check the MongoDB seed.",
+        ),
       );
   }, [selectedDataset]);
 
@@ -55,6 +67,7 @@ export default function MissionProvider({ children }) {
       value={{
         channels,
         mission,
+        detection,
         datasets,
         selectedDataset,
         selectDataset,

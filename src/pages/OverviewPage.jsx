@@ -8,7 +8,7 @@ import {
 } from "../components/DashboardComponents";
 
 export default function OverviewPage() {
-  const { channels, mission } = useMission();
+  const { channels, mission, detection } = useMission();
   return (
     <>
       <section className="metric-grid">
@@ -44,7 +44,10 @@ export default function OverviewPage() {
           title="Mission data health"
           action={`${mission.source.toUpperCase()} INDEX`}
         >
-          <HealthBars channels={channels} />
+          <HealthBars
+            channels={channels}
+            subsystemHealth={detection.subsystems}
+          />
         </Panel>
         <Panel title="Dataset coverage">
           <dl className="stats-list">

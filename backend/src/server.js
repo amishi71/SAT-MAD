@@ -3,10 +3,12 @@ import express from "express";
 import mongoose from "mongoose";
 import swaggerUi from "swagger-ui-express";
 import { Channel, Mission } from "./models.js";
+import { scorePca } from "./pca.js";
 
 const app = express();
 const port = process.env.PORT || 4000;
 const mongoUri = process.env.MONGO_URI || "mongodb://localhost:27017/sentinel";
+const pcaCache = new Map();
 const swaggerDocument = {
   openapi: "3.0.3",
   info: { title: "Sentinel Telemetry API", version: "0.2.0" },
@@ -47,6 +49,14 @@ const swaggerDocument = {
         },
       },
     },
+    "/api/detection/pca": {
+      get: {
+        summary: "Compute PCA multivariate anomaly scores",
+        responses: {
+          200: { description: "PCA score series and contributors" },
+        },
+      },
+    },
   },
 };
 
@@ -61,7 +71,10 @@ app.get("/api/health", async (_request, response) =>
   }),
 );
 app.get("/api/datasets", async (_request, response) => {
-  const datasets = await Mission.find({}, { _id: 0, key: 1, source: 1, channelCount: 1, anomalyCount: 1 })
+  const datasets = await Mission.find(
+    {},
+    { _id: 0, key: 1, source: 1, channelCount: 1, anomalyCount: 1 },
+  )
     .sort({ key: 1 })
     .lean();
   return response.json({ data: datasets });
@@ -95,20 +108,30 @@ app.get("/api/telemetry/channels/:channelId", async (request, response) => {
     : response.status(404).json({ error: "Channel not found" });
 });
 app.get("/api/detection/runs", async (request, response) => {
-  const mission = await Mission.findOne({ key: request.query.dataset || "esamission1" }).lean();
+  const mission = await Mission.findOne({
+    key: request.query.dataset || "esamission1",
+  }).lean();
   return mission
     ? response.json({
         data: [
           {
             id: "ESA-MISSION1-INDEX",
-            algorithm: "PCA-ready index",
+            algorithm: "PCA reconstruction error",
             channels: mission.channelCount,
             anomalies: mission.anomalyCount,
-            status: "ready",
+            status: "active",
           },
         ],
       })
     : response.status(404).json({ error: "Mission data has not been seeded" });
+});
+app.get("/api/detection/pca", async (request, response) => {
+  const dataset = request.query.dataset || "esamission1";
+  if (!pcaCache.has(dataset)) {
+    const channels = await Channel.find({ dataset }).sort({ id: 1 }).lean();
+    pcaCache.set(dataset, scorePca(channels));
+  }
+  return response.json({ data: pcaCache.get(dataset) });
 });
 
 async function start() {

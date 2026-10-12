@@ -42,31 +42,27 @@ export function Metric({ label, value, note, accent = "" }) {
   );
 }
 
-export function HealthBars({ channels }) {
-  const groups = [...new Set(channels.map((channel) => channel.subsystem))];
+export function HealthBars({ channels, subsystemHealth = [] }) {
+  const metrics = subsystemHealth.length
+    ? subsystemHealth
+    : [...new Set(channels.map((channel) => channel.subsystem))].map(
+        (subsystem) => ({ name: subsystem, healthScore: 0 }),
+      );
   return (
     <div className="health-bars">
-      {groups.map((group) => {
-        const members = channels.filter(
-          (channel) => channel.subsystem === group,
-        );
-        const labeled = members.reduce(
-          (sum, channel) => sum + channel.anomalies.length,
-          0,
-        );
-        const score = Math.max(
-          0,
-          Math.round(100 - (labeled / Math.max(members.length, 1)) * 10),
-        );
-        const tone = score < 95 ? "amber" : "green";
+      {metrics.map((metric) => {
+        const tone = metric.healthScore < 70 ? "amber" : "green";
         return (
-          <div className="health-bar" key={group}>
+          <div className="health-bar" key={metric.name}>
             <div>
-              <span>{group}</span>
-              <b className={tone}>{score}%</b>
+              <span>{metric.name}</span>
+              <b className={tone}>{metric.healthScore}%</b>
             </div>
             <i>
-              <em className={tone} style={{ width: `${score}%` }} />
+              <em
+                className={tone}
+                style={{ width: `${metric.healthScore}%` }}
+              />
             </i>
           </div>
         );
@@ -89,7 +85,9 @@ export function ChannelRows({ channels, onSelect, selected }) {
           </span>
           <span>{channel.sampleCount.toLocaleString()} samples</span>
           <span>{channel.subsystemName}</span>
-          <span>{channel.currentLabel || channel.current} {channel.unitName}</span>
+          <span>
+            {channel.currentLabel || channel.current} {channel.unitName}
+          </span>
           <span
             className={`status-pill ${channel.anomalies.length ? "warning" : "nominal"}`}
           >

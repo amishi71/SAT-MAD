@@ -29,6 +29,15 @@ paths:
       responses:
         "200": { description: Channel data and statistics }
         "404": { description: Channel not found }
+  /api/detection/pca:
+    get:
+      summary: Compute PCA multivariate anomaly scores
+      parameters:
+        - name: dataset
+          in: query
+          schema: { type: string, example: esamission1 }
+      responses:
+        "200": { description: PCA score series, threshold, and contributors }
   /api/detection/runs:
     get:
       summary: List PCA detection runs
