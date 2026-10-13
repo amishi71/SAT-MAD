@@ -15,6 +15,7 @@ Sentinel is a React/Vite frontend with an Express/MongoDB backend for ESA Missio
 - `backend/src/pca.js`: PCA reconstruction-error scoring and subsystem health aggregation.
 - `backend/scripts/`: ESA ingestion and MongoDB seeding scripts.
 - `backend/data/`: Generated compact telemetry summaries. Do not edit these files manually.
+- `detection/`: Python detection service (FastAPI). Per-subsystem PCA scoring, gap handling, Monte Carlo threshold calibration, evaluation, robustness trials, and its pytest suite. Design: `docs/detection-design.md`.
 
 ## Development Commands
 
@@ -74,6 +75,15 @@ The API runs on port `4000`; the Vite frontend runs on port `5173` unless anothe
 ## Backend Rules
 
 - Keep route handlers dataset-aware and MongoDB-backed.
-- Keep PCA calculations independent from source labels.
+- Keep PCA scoring independent from source labels. Labels may only select known-normal rows for fitting/calibration and drive evaluation (`detection/`); they never enter the score.
+- `backend/src/pca.js` is superseded by `detection/`; do not extend it. Remove it once the API calls the detection service.
 - Run JavaScript syntax checks and an API smoke test after backend changes.
 - Update `openapi.yaml` when adding or changing public API routes.
+
+## Detection Service Rules
+
+- Run `cd detection && pip install -r requirements-dev.txt && pytest -q` after any change in `detection/`; CI runs the same.
+- Fit and calibrate only on known-normal rows, split chronologically; never calibrate a threshold on the data used to fit the model.
+- Report uncertainty with every rate (bootstrap/Wilson CIs, held-out FAR). Do not replace them with single point estimates.
+- Gaps and invalid samples stay NaN and are not scored; never mean-impute them back into the data.
+- Keep the request/response contract in `detection/sentinel_detection/schemas.py`; the OpenAPI document is generated from it at `/openapi.json`.

@@ -16,6 +16,21 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
+  detection:
+    build: ./detection
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
   mongo:
     image: mongo:8
     ports:

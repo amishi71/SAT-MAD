@@ -57,3 +57,16 @@ docker compose up --build
 ```
 
 The API is available at `http://localhost:4000`; OpenAPI docs are at `http://localhost:4000/api/docs`.
+
+## Detection service (Python)
+
+Multivariate PCA scoring, gap handling, Monte Carlo threshold calibration, event-level evaluation with confidence intervals, and robustness trials live in `detection/`.
+
+```powershell
+cd detection
+python -m pip install -r requirements-dev.txt
+python -m pytest -q
+python -m uvicorn sentinel_detection.service:app --port 8000   # docs at http://localhost:8000/docs
+```
+
+`POST /detect` takes channels (grouped by `subsystem`) and a config, and returns per-subsystem scores, the calibrated threshold with its threshold-vs-false-alarm curve, held-out false-alarm validation, alarms, and event-level metrics with CIs. Method and limitations: `docs/detection-design.md`. The detector needs a dense, time-bounded window per subsystem; the 120-point indexed summaries in `backend/data/` are too coarse to detect anything (see the design doc).
