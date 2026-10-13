@@ -1,3 +1,4 @@
+
 services:
   api:
     build: ./backend
@@ -5,9 +6,13 @@ services:
       - "4000:4000"
     environment:
       MONGO_URI: mongodb://mongo:27017/sentinel
+      DETECTION_URL: http://detection:8000
+
+      
     depends_on:
       seed:
         condition: service_completed_successfully
+
   seed:
     build: ./backend
     command: npm run seed
@@ -16,21 +21,21 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
+
   detection:
     build: ./detection
     ports:
       - "8000:8000"
     healthcheck:
       test:
-        [
-          "CMD",
-          "python",
-          "-c",
-          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')",
-        ]
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
       interval: 10s
       timeout: 5s
       retries: 6
+
   mongo:
     image: mongo:8
     ports:
@@ -39,12 +44,21 @@ services:
       - sentinel-mongo:/data/db
     healthcheck:
       test:
-        [
-          "CMD-SHELL",
-          "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' localhost:27017/sentinel | grep 1",
-        ]
+        - CMD-SHELL
+        - "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' localhost:27017/sentinel | grep 1"
       interval: 5s
       timeout: 5s
       retries: 12
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+      - detection
+
 volumes:
   sentinel-mongo:
